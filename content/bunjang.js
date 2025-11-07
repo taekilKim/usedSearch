@@ -3,23 +3,30 @@
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
   function parseBunjang() {
-    // 모바일(권장) 셀렉터 우선, 데스크톱 대체 셀렉터도 보조로 시도
-    // 실제 클래스명은 수시로 바뀔 수 있어, 의미 기반으로 넓게 탐색
+    // 더 포괄적인 셀렉터 사용
     const itemNodes = [
-      ...document.querySelectorAll('[data-testid="product-card"], a[href*="/products/"]')
-    ];
+      ...document.querySelectorAll('a[href*="/products/"], div[class*="product"], div[class*="Product"], li[class*="product"]')
+    ].filter(node => {
+      // 중복 제거: href가 있는 것만 또는 자식에 링크가 있는 것만
+      return node.tagName === 'A' || node.querySelector('a[href*="/products/"]');
+    });
 
-    const items = itemNodes.slice(0, 30).map((node) => {
-      // 카드 루트 기준으로 제목/가격 찾기
-      const title = safeText(node, '[data-testid="product-title"], .title, .name, .sc-hLBbgP, .sc-gKclnd');
-      const priceStr = safeText(node, '[data-testid="product-price"], .price, .sc-dKREkW, .amount');
+    const items = itemNodes.slice(0, 50).map((node) => {
+      // 다양한 셀렉터 시도
+      const titleSelectors = '[data-testid="product-title"], .title, .name, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"]';
+      const priceSelectors = '[data-testid="product-price"], .price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
+
+      const title = safeText(node, titleSelectors);
+      const priceStr = safeText(node, priceSelectors);
       const price = parsePriceToNumber(priceStr);
-      const href = node.getAttribute('href') || node.querySelector('a')?.getAttribute('href');
-      const link = href ? absolutize(href) : location.href;
+
+      const href = node.getAttribute('href') || node.querySelector('a[href*="/products/"]')?.getAttribute('href');
+      const link = href ? absolutize(href) : '';
 
       return { platform: 'bunjang', title, priceStr, price, link };
-    }).filter(v => v.title && !Number.isNaN(v.price));
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
 
+    console.log('[번개장터] 수집된 아이템:', items.length);
     return items;
   }
 

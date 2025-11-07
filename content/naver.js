@@ -3,21 +3,28 @@
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
   function parseNaver() {
-    // 네이버 쇼핑 중고 상품 선택자
+    // 더 포괄적인 셀렉터 사용
     const itemNodes = [
-      ...document.querySelectorAll('.product_list_item, .product_item, [data-nclick*="product"], div[class*="product"]')
-    ];
+      ...document.querySelectorAll('.product_list_item, .product_item, [data-nclick*="product"], div[class*="product"], div[class*="Product"], li[class*="product"], div[class*="item"]')
+    ].filter(node => {
+      return node.querySelector('a');
+    });
 
-    const items = itemNodes.slice(0, 30).map((node) => {
-      const title = safeText(node, '.product_title, .basicList_title, [class*="title"]');
-      const priceStr = safeText(node, '.price, .price_num, [class*="price"], .num');
+    const items = itemNodes.slice(0, 50).map((node) => {
+      const titleSelectors = '.product_title, .basicList_title, [class*="title"], [class*="Title"], div[class*="title"], span[class*="title"], a[class*="title"]';
+      const priceSelectors = '.price, .price_num, [class*="price"], [class*="Price"], .num, em, strong[class*="price"], span[class*="price"]';
+
+      const title = safeText(node, titleSelectors);
+      const priceStr = safeText(node, priceSelectors);
       const price = parsePriceToNumber(priceStr);
+
       const href = node.getAttribute('href') || node.querySelector('a')?.getAttribute('href');
-      const link = href ? absolutize(href) : location.href;
+      const link = href ? absolutize(href) : '';
 
       return { platform: 'naver', title, priceStr, price, link };
-    }).filter(v => v.title && !Number.isNaN(v.price));
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
 
+    console.log('[네이버] 수집된 아이템:', items.length);
     return items;
   }
 

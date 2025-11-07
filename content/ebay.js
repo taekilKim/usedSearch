@@ -3,21 +3,28 @@
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
   function parseEbay() {
-    // 이베이 검색 결과 아이템 선택자
+    // 더 포괄적인 셀렉터 사용
     const itemNodes = [
-      ...document.querySelectorAll('.s-item, li[data-view], div.srp-results .s-item')
-    ];
+      ...document.querySelectorAll('.s-item, li[data-view], div.srp-results .s-item, li[class*="item"], div[class*="item"]')
+    ].filter(node => {
+      return node.querySelector('a');
+    });
 
-    const items = itemNodes.slice(0, 30).map((node) => {
-      const title = safeText(node, '.s-item__title, h3.s-item__title, [role="heading"]');
-      const priceStr = safeText(node, '.s-item__price, span[class*="price"]');
+    const items = itemNodes.slice(0, 50).map((node) => {
+      const titleSelectors = '.s-item__title, h3.s-item__title, [role="heading"], h3, div[class*="title"], span[class*="title"]';
+      const priceSelectors = '.s-item__price, span[class*="price"], span[class*="Price"], div[class*="price"]';
+
+      const title = safeText(node, titleSelectors);
+      const priceStr = safeText(node, priceSelectors);
       const price = parsePriceToNumber(priceStr);
+
       const href = node.getAttribute('href') || node.querySelector('a')?.getAttribute('href');
-      const link = href ? absolutize(href) : location.href;
+      const link = href ? absolutize(href) : '';
 
       return { platform: 'ebay', title, priceStr, price, link };
-    }).filter(v => v.title && !Number.isNaN(v.price));
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
 
+    console.log('[이베이] 수집된 아이템:', items.length);
     return items;
   }
 
