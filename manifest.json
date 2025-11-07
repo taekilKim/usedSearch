@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "중고 가격비교 (번개장터+중고나라) MVP",
+  "version": "0.1.0",
+  "description": "검색어 한 번으로 번개장터/중고나라 동시 검색, 결과를 모아 가격순 비교",
+  "action": {
+    "default_title": "중고 가격비교",
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://m.bunjang.co.kr/*",
+    "https://bunjang.co.kr/*",
+    "https://web.joongna.com/*",
+    "https://joongna.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://m.bunjang.co.kr/*",
+        "https://bunjang.co.kr/*"
+      ],
+      "js": ["shared/util.js", "content/bunjang.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://web.joongna.com/*",
+        "https://joongna.com/*"
+      ],
+      "js": ["shared/util.js", "content/joongna.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

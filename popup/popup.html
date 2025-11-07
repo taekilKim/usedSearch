@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>중고 가격비교</title>
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>중고 가격비교</h1>
+
+    <form id="searchForm">
+      <input id="q" type="text" placeholder="예: 아이폰 13, 맥북 에어 2019" autofocus />
+      <button type="submit">동시 검색</button>
+    </form>
+
+    <div class="hint">검색을 누르면 번개장터/중고나라 탭이 열리고, 결과가 자동으로 수집됩니다.</div>
+
+    <div id="summary" class="summary"></div>
+
+    <div id="results" class="results"></div>
+  </div>
+
+  <script src="./popup.js" type="module"></script>
+</body>
+</html>
