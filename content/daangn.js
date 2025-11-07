@@ -10,7 +10,7 @@
       return node.tagName === 'A' || node.querySelector('a[href*="/article"]');
     });
 
-    const items = itemNodes.slice(0, 50).map((node) => {
+    const items = itemNodes.slice(0, 30).map((node) => {
       const titleSelectors = 'h2, h3, .article-title, [class*="title"], [class*="Title"], span[class*="title"], div[class*="title"]';
       const priceSelectors = '[class*="price"], [class*="Price"], .article-price, .price-text, span[class*="price"], div[class*="price"]';
 
@@ -22,7 +22,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'daangn', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
 
     console.log('[당근마켓] 수집된 아이템:', items.length);
     return items;

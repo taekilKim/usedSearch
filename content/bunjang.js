@@ -11,7 +11,7 @@
       return node.tagName === 'A' || node.querySelector('a[href*="/products/"]');
     });
 
-    const items = itemNodes.slice(0, 50).map((node) => {
+    const items = itemNodes.slice(0, 30).map((node) => {
       // 다양한 셀렉터 시도
       const titleSelectors = '[data-testid="product-title"], .title, .name, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"]';
       const priceSelectors = '[data-testid="product-price"], .price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
@@ -24,7 +24,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'bunjang', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
 
     console.log('[번개장터] 수집된 아이템:', items.length);
     return items;

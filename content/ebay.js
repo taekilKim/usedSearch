@@ -10,7 +10,7 @@
       return node.querySelector('a');
     });
 
-    const items = itemNodes.slice(0, 50).map((node) => {
+    const items = itemNodes.slice(0, 30).map((node) => {
       const titleSelectors = '.s-item__title, h3.s-item__title, [role="heading"], h3, div[class*="title"], span[class*="title"]';
       const priceSelectors = '.s-item__price, span[class*="price"], span[class*="Price"], div[class*="price"]';
 
@@ -22,7 +22,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'ebay', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
 
     console.log('[이베이] 수집된 아이템:', items.length);
     return items;
