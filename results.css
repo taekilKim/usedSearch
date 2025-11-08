@@ -176,6 +176,32 @@ h1 {
   color: #667eea;
 }
 
+.load-more-btn {
+  display: block;
+  margin: 30px auto 40px;
+  padding: 16px 40px;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.load-more-btn:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.load-more-btn:active {
+  transform: translateY(0);
+}
+
 footer {
   background: rgba(255, 255, 255, 0.9);
   padding: 20px;
@@ -196,5 +222,10 @@ footer {
 
   h1 {
     font-size: 24px;
+  }
+
+  .load-more-btn {
+    padding: 14px 32px;
+    font-size: 14px;
   }
 }

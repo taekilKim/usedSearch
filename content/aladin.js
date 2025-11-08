@@ -11,7 +11,7 @@
       return node.querySelector('a[href*="ItemId"], a[href*="product"], a.bo3');
     });
 
-    const items = itemNodes.slice(0, 30).map((node) => {
+    const items = itemNodes.slice(0, 50).map((node) => {
       const titleSelectors = '.ss_book_list_title, .bo3, [itemprop="name"], a.bo3, a[href*="ItemId"], b, strong, h3';
       const priceSelectors = '.ss_p2, .ss_p1, [class*="price"], .price_border, [itemprop="price"], span[class*="price"], b, strong';
 
@@ -23,7 +23,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'aladin', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 30);
 
     console.log('[알라딘] 수집된 아이템:', items.length);
     return items;

@@ -10,7 +10,7 @@
       return node.querySelector('a');
     });
 
-    const items = itemNodes.slice(0, 30).map((node) => {
+    const items = itemNodes.slice(0, 50).map((node) => {
       const titleSelectors = '.product_title, .basicList_title, [class*="title"], [class*="Title"], div[class*="title"], span[class*="title"], a[class*="title"]';
       const priceSelectors = '.price, .price_num, [class*="price"], [class*="Price"], .num, em, strong[class*="price"], span[class*="price"]';
 
@@ -22,7 +22,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'naver', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 30);
 
     console.log('[네이버] 수집된 아이템:', items.length);
     return items;

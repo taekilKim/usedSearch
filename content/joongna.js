@@ -10,7 +10,7 @@
       return node.tagName === 'A' || node.querySelector('a[href*="/product/"]');
     });
 
-    const items = cards.slice(0, 30).map(card => {
+    const items = cards.slice(0, 50).map(card => {
       const titleSelectors = '.title, [data-testid="title"], .product-title, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"], p[class*="title"]';
       const priceSelectors = '.price, [data-testid="price"], .product-price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
 
@@ -22,7 +22,7 @@
       const link = href ? absolutize(href) : '';
 
       return { platform: 'joongna', title, priceStr, price, link };
-    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 15);
+    }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 30);
 
     console.log('[중고나라] 수집된 아이템:', items.length);
     return items;

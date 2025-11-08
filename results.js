@@ -7,6 +7,12 @@ const platformNames = {
   ebay: '이베이'
 };
 
+// 페이지네이션 상태
+let allItems = [];
+let displayedCount = 0;
+const INITIAL_DISPLAY = 50;
+const LOAD_MORE_COUNT = 30;
+
 function summarize(data) {
   const counts = Object.keys(platformNames).map(key => {
     const count = data?.[key]?.length || 0;
@@ -34,9 +40,57 @@ function calculateStats(items) {
   return { min, max, avg, total };
 }
 
+function renderItems(items, append = false) {
+  const resultsEl = document.querySelector('#results');
+
+  const itemsHTML = items.map(x => `
+    <div class="card" onclick="window.open('${x.link}', '_blank')">
+      <div class="platform platform-${x.platform}">${platformNames[x.platform] || x.platform}</div>
+      <a href="${x.link}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${x.title}</a>
+      <div class="meta">
+        <span class="price">${(x.price || 0).toLocaleString()}원</span>
+      </div>
+    </div>
+  `).join('');
+
+  if (append) {
+    resultsEl.insertAdjacentHTML('beforeend', itemsHTML);
+  } else {
+    resultsEl.innerHTML = itemsHTML;
+  }
+}
+
+function updateLoadMoreButton() {
+  let loadMoreBtn = document.querySelector('#loadMoreBtn');
+
+  if (displayedCount < allItems.length) {
+    if (!loadMoreBtn) {
+      loadMoreBtn = document.createElement('button');
+      loadMoreBtn.id = 'loadMoreBtn';
+      loadMoreBtn.className = 'load-more-btn';
+      loadMoreBtn.textContent = `더 보기 (${allItems.length - displayedCount}개 남음)`;
+      loadMoreBtn.onclick = loadMore;
+      document.querySelector('.container').appendChild(loadMoreBtn);
+    } else {
+      loadMoreBtn.textContent = `더 보기 (${allItems.length - displayedCount}개 남음)`;
+      loadMoreBtn.style.display = 'block';
+    }
+  } else {
+    if (loadMoreBtn) {
+      loadMoreBtn.style.display = 'none';
+    }
+  }
+}
+
+function loadMore() {
+  const nextItems = allItems.slice(displayedCount, displayedCount + LOAD_MORE_COUNT);
+  renderItems(nextItems, true);
+  displayedCount += nextItems.length;
+  updateLoadMoreButton();
+}
+
 function render(data) {
   const loadingEl = document.querySelector('#loading');
-  const resultsEl = document.querySelector('#results');
   const summaryEl = document.querySelector('#summary');
   const statsEl = document.querySelector('#stats');
 
@@ -46,7 +100,7 @@ function render(data) {
   }
 
   // 모든 플랫폼의 데이터 수집
-  const all = [
+  allItems = [
     ...(data?.bunjang || []),
     ...(data?.joongna || []),
     ...(data?.daangn || []),
@@ -55,10 +109,10 @@ function render(data) {
     ...(data?.ebay || [])
   ].filter(x => !Number.isNaN(x.price));
 
-  all.sort((a, b) => a.price - b.price);
+  allItems.sort((a, b) => a.price - b.price);
 
   // 통계 계산
-  const stats = calculateStats(all);
+  const stats = calculateStats(allItems);
 
   // 수집 정보 표시
   summaryEl.innerHTML = `<strong>📊 수집 결과:</strong> ${summarize(data)}`;
@@ -87,16 +141,13 @@ function render(data) {
     statsEl.innerHTML = '<p style="text-align: center;">수집된 데이터가 없습니다. 검색어를 변경하거나 다시 시도해주세요.</p>';
   }
 
-  // 결과 표시
-  resultsEl.innerHTML = all.map(x => `
-    <div class="card" onclick="window.open('${x.link}', '_blank')">
-      <div class="platform platform-${x.platform}">${platformNames[x.platform] || x.platform}</div>
-      <a href="${x.link}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${x.title}</a>
-      <div class="meta">
-        <span class="price">${(x.price || 0).toLocaleString()}원</span>
-      </div>
-    </div>
-  `).join('');
+  // 초기 표시 개수만큼만 렌더링
+  displayedCount = Math.min(INITIAL_DISPLAY, allItems.length);
+  const initialItems = allItems.slice(0, displayedCount);
+  renderItems(initialItems, false);
+
+  // 더 보기 버튼 업데이트
+  updateLoadMoreButton();
 }
 
 // 초기 데이터 요청
