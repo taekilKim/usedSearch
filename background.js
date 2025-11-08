@@ -13,7 +13,21 @@ async function save() {
   await chrome.storage.local.set({ [KEY]: cache });
 }
 
-chrome.runtime.onInstalled.addListener(load);
+chrome.runtime.onInstalled.addListener(async () => {
+  // 이전 버전의 데이터 구조를 정리
+  const oldData = await chrome.storage.local.get([KEY]);
+  if (oldData[KEY]) {
+    const cleaned = {
+      bunjang: oldData[KEY].bunjang || [],
+      joongna: oldData[KEY].joongna || [],
+      daangn: oldData[KEY].daangn || []
+    };
+    cache = cleaned;
+    await save();
+  } else {
+    await load();
+  }
+});
 chrome.runtime.onStartup.addListener(load);
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
