@@ -2,7 +2,7 @@
 
 // 메모리 캐시 + 영구 저장
 const KEY = 'aggResults';
-let cache = { bunjang: [], joongna: [], daangn: [], aladin: [] };
+let cache = { bunjang: [], joongna: [], daangn: [] };
 
 async function load() {
   const s = await chrome.storage.local.get([KEY]);

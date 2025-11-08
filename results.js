@@ -1,8 +1,7 @@
 const platformNames = {
   bunjang: '번개장터',
   joongna: '중고나라',
-  daangn: '당근마켓',
-  aladin: '알라딘'
+  daangn: '당근마켓'
 };
 
 // 페이지네이션 상태
@@ -101,8 +100,7 @@ function render(data) {
   allItems = [
     ...(data?.bunjang || []),
     ...(data?.joongna || []),
-    ...(data?.daangn || []),
-    ...(data?.aladin || [])
+    ...(data?.daangn || [])
   ].filter(x => !Number.isNaN(x.price));
 
   allItems.sort((a, b) => a.price - b.price);
@@ -149,7 +147,7 @@ function render(data) {
 // 초기 데이터 요청
 function requestAgg() {
   chrome.runtime.sendMessage({ type: 'GET_AGG' }, (res) => {
-    render(res?.data || { bunjang: [], joongna: [], daangn: [], aladin: [] });
+    render(res?.data || { bunjang: [], joongna: [], daangn: [] });
   });
 }
 

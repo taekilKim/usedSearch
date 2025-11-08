@@ -1,7 +1,6 @@
 const bunjangURL = (q) => `https://m.bunjang.co.kr/search/products?q=${encodeURIComponent(q)}`;
 const joongnaURL = (q) => `https://web.joongna.com/search?keyword=${encodeURIComponent(q)}`;
 const daangnURL = (q) => `https://www.daangn.com/search/${encodeURIComponent(q)}`;
-const aladinURL = (q) => `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Used&SearchWord=${encodeURIComponent(q)}`;
 
 function parsePriceToNumber(text) {
   if (!text) return NaN;
@@ -17,14 +16,12 @@ function openSearchTabs(q) {
   chrome.tabs.create({ url: bunjangURL(q), active: false });
   chrome.tabs.create({ url: joongnaURL(q), active: false });
   chrome.tabs.create({ url: daangnURL(q), active: false });
-  chrome.tabs.create({ url: aladinURL(q), active: false });
 }
 
 const platformNames = {
   bunjang: '번개장터',
   joongna: '중고나라',
-  daangn: '당근마켓',
-  aladin: '알라딘'
+  daangn: '당근마켓'
 };
 
 function summarize(data) {
@@ -62,8 +59,7 @@ function render(data) {
   const all = [
     ...(data?.bunjang || []),
     ...(data?.joongna || []),
-    ...(data?.daangn || []),
-    ...(data?.aladin || [])
+    ...(data?.daangn || [])
   ].filter(x => !Number.isNaN(x.price));
 
   all.sort((a, b) => a.price - b.price);
@@ -91,7 +87,7 @@ function render(data) {
 // 초기 데이터 요청
 function requestAgg() {
   chrome.runtime.sendMessage({ type: 'GET_AGG' }, (res) => {
-    render(res?.data || { bunjang: [], joongna: [], daangn: [], aladin: [] });
+    render(res?.data || { bunjang: [], joongna: [], daangn: [] });
   });
 }
 

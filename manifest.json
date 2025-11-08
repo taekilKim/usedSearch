@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "중고 가격비교 통합 검색",
   "version": "0.2.0",
-  "description": "검색어 한 번으로 번개장터, 중고나라, 당근, 알라딘 등 여러 중고 플랫폼 동시 검색 및 가격 비교",
+  "description": "검색어 한 번으로 번개장터, 중고나라, 당근 등 여러 중고 플랫폼 동시 검색 및 가격 비교",
   "action": {
     "default_title": "중고 가격비교",
     "default_popup": "popup/popup.html"
@@ -18,9 +18,7 @@
     "https://web.joongna.com/*",
     "https://joongna.com/*",
     "https://www.daangn.com/*",
-    "https://daangn.com/*",
-    "https://www.aladin.co.kr/*",
-    "https://aladin.co.kr/*"
+    "https://daangn.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -48,14 +46,6 @@
         "https://daangn.com/*"
       ],
       "js": ["shared/util.js", "content/daangn.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "https://www.aladin.co.kr/*",
-        "https://aladin.co.kr/*"
-      ],
-      "js": ["shared/util.js", "content/aladin.js"],
       "run_at": "document_idle"
     }
   ]
