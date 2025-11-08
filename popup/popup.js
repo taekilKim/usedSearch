@@ -2,8 +2,6 @@ const bunjangURL = (q) => `https://m.bunjang.co.kr/search/products?q=${encodeURI
 const joongnaURL = (q) => `https://web.joongna.com/search?keyword=${encodeURIComponent(q)}`;
 const daangnURL = (q) => `https://www.daangn.com/search/${encodeURIComponent(q)}`;
 const aladinURL = (q) => `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Used&SearchWord=${encodeURIComponent(q)}`;
-const naverURL = (q) => `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(q)}&frm=NVSHCHK`;
-const ebayURL = (q) => `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}`;
 
 function parsePriceToNumber(text) {
   if (!text) return NaN;
@@ -20,17 +18,13 @@ function openSearchTabs(q) {
   chrome.tabs.create({ url: joongnaURL(q), active: false });
   chrome.tabs.create({ url: daangnURL(q), active: false });
   chrome.tabs.create({ url: aladinURL(q), active: false });
-  chrome.tabs.create({ url: naverURL(q), active: false });
-  chrome.tabs.create({ url: ebayURL(q), active: false });
 }
 
 const platformNames = {
   bunjang: '번개장터',
   joongna: '중고나라',
   daangn: '당근마켓',
-  aladin: '알라딘',
-  naver: '네이버',
-  ebay: '이베이'
+  aladin: '알라딘'
 };
 
 function summarize(data) {
@@ -69,9 +63,7 @@ function render(data) {
     ...(data?.bunjang || []),
     ...(data?.joongna || []),
     ...(data?.daangn || []),
-    ...(data?.aladin || []),
-    ...(data?.naver || []),
-    ...(data?.ebay || [])
+    ...(data?.aladin || [])
   ].filter(x => !Number.isNaN(x.price));
 
   all.sort((a, b) => a.price - b.price);
@@ -99,7 +91,7 @@ function render(data) {
 // 초기 데이터 요청
 function requestAgg() {
   chrome.runtime.sendMessage({ type: 'GET_AGG' }, (res) => {
-    render(res?.data || { bunjang: [], joongna: [], daangn: [], aladin: [], naver: [], ebay: [] });
+    render(res?.data || { bunjang: [], joongna: [], daangn: [], aladin: [] });
   });
 }
 
