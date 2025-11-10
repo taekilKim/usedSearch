@@ -9,13 +9,16 @@ function parsePriceToNumber(text) {
 }
 
 function openSearchTabs(q) {
-  // 결과 페이지를 먼저 열기
-  chrome.tabs.create({ url: chrome.runtime.getURL('results.html'), active: true });
+  // 이전 검색 결과 캐시 초기화
+  chrome.runtime.sendMessage({ type: 'CLEAR_CACHE' }, () => {
+    // 결과 페이지를 먼저 열기
+    chrome.tabs.create({ url: chrome.runtime.getURL('results.html'), active: true });
 
-  // 각 플랫폼 검색 페이지를 백그라운드에서 열기
-  chrome.tabs.create({ url: bunjangURL(q), active: false });
-  chrome.tabs.create({ url: joongnaURL(q), active: false });
-  chrome.tabs.create({ url: daangnURL(q), active: false });
+    // 각 플랫폼 검색 페이지를 백그라운드에서 열기
+    chrome.tabs.create({ url: bunjangURL(q), active: false });
+    chrome.tabs.create({ url: joongnaURL(q), active: false });
+    chrome.tabs.create({ url: daangnURL(q), active: false });
+  });
 }
 
 const platformNames = {

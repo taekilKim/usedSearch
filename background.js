@@ -1,5 +1,8 @@
 // 크로스-탭에서 오는 스크랩 결과를 모아 저장하고, 팝업에 브로드캐스트
 
+// 허용된 플랫폼 목록
+const ALLOWED_PLATFORMS = ['bunjang', 'joongna', 'daangn'];
+
 // 메모리 캐시 + 영구 저장
 const KEY = 'aggResults';
 let cache = { bunjang: [], joongna: [], daangn: [] };
@@ -32,6 +35,12 @@ chrome.runtime.onStartup.addListener(load);
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'SCRAPE_RESULT' && msg.platform && Array.isArray(msg.items)) {
+    // 허용된 플랫폼인지 확인
+    if (!ALLOWED_PLATFORMS.includes(msg.platform)) {
+      console.log(`Ignored data from unauthorized platform: ${msg.platform}`);
+      return;
+    }
+
     cache[msg.platform] = msg.items;
     save();
 
@@ -44,5 +53,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'GET_AGG') {
     sendResponse({ data: cache });
+  } else if (msg?.type === 'CLEAR_CACHE') {
+    // 캐시 완전 초기화
+    cache = { bunjang: [], joongna: [], daangn: [] };
+    save();
+    sendResponse({ success: true });
   }
 });
