@@ -1,8 +1,23 @@
 // 번개장터 검색결과 파싱
 (function () {
+  console.log('[번개장터] 스크립트 시작');
+  console.log('[번개장터] UTIL 객체:', window.__UTIL__);
+
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
   function parseBunjang() {
+    console.log('[번개장터] parseBunjang 실행, URL:', location.href);
+
+    // 실제 페이지 구조 디버깅
+    const allLinks = document.querySelectorAll('a');
+    const productLinks = Array.from(allLinks).filter(a => a.href.includes('/products/'));
+    console.log('[번개장터] 전체 링크 개수:', allLinks.length);
+    console.log('[번개장터] /products/ 링크 개수:', productLinks.length);
+
+    if (productLinks.length > 0) {
+      console.log('[번개장터] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 200));
+    }
+
     // 더 포괄적인 셀렉터 사용
     const itemNodes = [
       ...document.querySelectorAll('a[href*="/products/"], div[class*="product"], div[class*="Product"], li[class*="product"]')
@@ -11,7 +26,9 @@
       return node.tagName === 'A' || node.querySelector('a[href*="/products/"]');
     });
 
-    const items = itemNodes.slice(0, 50).map((node) => {
+    console.log('[번개장터] 발견된 아이템 노드:', itemNodes.length);
+
+    const items = itemNodes.slice(0, 50).map((node, idx) => {
       // 다양한 셀렉터 시도
       const titleSelectors = '[data-testid="product-title"], .title, .name, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"]';
       const priceSelectors = '[data-testid="product-price"], .price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
@@ -23,10 +40,17 @@
       const href = node.getAttribute('href') || node.querySelector('a[href*="/products/"]')?.getAttribute('href');
       const link = href ? absolutize(href) : '';
 
+      if (idx === 0) {
+        console.log('[번개장터] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
+      }
+
       return { platform: 'bunjang', title, priceStr, price, link };
     }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 30);
 
     console.log('[번개장터] 수집된 아이템:', items.length);
+    if (items.length > 0) {
+      console.log('[번개장터] 첫 번째 수집 아이템:', items[0]);
+    }
     return items;
   }
 

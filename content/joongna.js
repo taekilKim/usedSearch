@@ -1,8 +1,23 @@
 // 중고나라(웹) 검색결과 파싱
 (function () {
+  console.log('[중고나라] 스크립트 시작');
+  console.log('[중고나라] UTIL 객체:', window.__UTIL__);
+
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
   function parseJoongna() {
+    console.log('[중고나라] parseJoongna 실행, URL:', location.href);
+
+    // 실제 페이지 구조 디버깅
+    const allLinks = document.querySelectorAll('a');
+    const productLinks = Array.from(allLinks).filter(a => a.href.includes('/product/'));
+    console.log('[중고나라] 전체 링크 개수:', allLinks.length);
+    console.log('[중고나라] /product/ 링크 개수:', productLinks.length);
+
+    if (productLinks.length > 0) {
+      console.log('[중고나라] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 200));
+    }
+
     // 더 포괄적인 셀렉터 사용
     const cards = [
       ...document.querySelectorAll('a[href*="/product/"], div[class*="product"], div[class*="Product"], li[class*="item"], article')
@@ -10,7 +25,9 @@
       return node.tagName === 'A' || node.querySelector('a[href*="/product/"]');
     });
 
-    const items = cards.slice(0, 50).map(card => {
+    console.log('[중고나라] 발견된 카드 노드:', cards.length);
+
+    const items = cards.slice(0, 50).map((card, idx) => {
       const titleSelectors = '.title, [data-testid="title"], .product-title, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"], p[class*="title"]';
       const priceSelectors = '.price, [data-testid="price"], .product-price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
 
@@ -21,10 +38,17 @@
       const href = card.getAttribute('href') || card.querySelector('a[href*="/product/"]')?.getAttribute('href');
       const link = href ? absolutize(href) : '';
 
+      if (idx === 0) {
+        console.log('[중고나라] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
+      }
+
       return { platform: 'joongna', title, priceStr, price, link };
     }).filter(v => v.title && v.link && !Number.isNaN(v.price) && v.price > 0).slice(0, 30);
 
     console.log('[중고나라] 수집된 아이템:', items.length);
+    if (items.length > 0) {
+      console.log('[중고나라] 첫 번째 수집 아이템:', items[0]);
+    }
     return items;
   }
 
