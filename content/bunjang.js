@@ -31,32 +31,23 @@
       // node는 <a> 태그 자체
       const link = absolutize(node.href);
 
-      // 제목과 가격은 링크 안의 요소에서 찾기
-      const titleSelectors = 'div, span, p, h3, h4';
-      const priceSelectors = 'div, span, p';
-
-      // 모든 텍스트를 가져와서 분석
-      const allText = node.textContent || '';
-      const lines = allText.split('\n').map(s => s.trim()).filter(s => s);
+      // 모든 텍스트를 가져와서 분석 (공백 제거하지 않고)
+      const allText = (node.textContent || '').trim();
 
       if (idx === 0) {
         console.log('[번개장터] 첫 번째 아이템 전체 텍스트:', allText);
-        console.log('[번개장터] 텍스트 라인들:', lines);
       }
 
-      // 가격 패턴 찾기 (숫자 + 원 또는 쉼표가 있는 숫자)
-      let priceStr = '';
-      let title = '';
-
-      for (const line of lines) {
-        if (!priceStr && /[\d,]+\s*원?/.test(line)) {
-          priceStr = line;
-        } else if (!title && line.length > 2 && !/^[\d,]+\s*원?$/.test(line)) {
-          title = line;
-        }
-      }
-
+      // 가격 패턴 찾기 (쉼표로 구분된 숫자: 1,000 ~ 999,999,999)
+      const priceMatch = allText.match(/\b(\d{1,3}(?:,\d{3})+)\b/);
+      const priceStr = priceMatch ? priceMatch[1] : '';
       const price = parsePriceToNumber(priceStr);
+
+      // 제목: 가격 앞부분 (최대 100자, 앞뒤 공백 제거)
+      let title = '';
+      if (priceMatch && priceMatch.index > 0) {
+        title = allText.substring(0, priceMatch.index).trim().substring(0, 100);
+      }
 
       if (idx === 0) {
         console.log('[번개장터] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
