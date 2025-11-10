@@ -30,19 +30,35 @@
 
   function send() {
     try {
-      const payload = { type: 'SCRAPE_RESULT', platform: 'joongna', items: parseJoongna() };
-      chrome.runtime.sendMessage(payload);
-    } catch (e) {}
+      const items = parseJoongna();
+      const payload = { type: 'SCRAPE_RESULT', platform: 'joongna', items };
+      chrome.runtime.sendMessage(payload, () => {
+        console.log('[중고나라] 메시지 전송 완료:', items.length, '개');
+      });
+    } catch (e) {
+      console.error('[중고나라] 오류:', e);
+    }
   }
 
-  window.addEventListener('load', () => {
-    setTimeout(send, 600);
-    setTimeout(send, 1800);
-  });
+  // 즉시 실행 + 지연 실행 (SPA 대응)
+  setTimeout(send, 500);
+  setTimeout(send, 1500);
+  setTimeout(send, 3000);
 
+  // load 이벤트 처리 (아직 로드 안된 경우)
+  if (document.readyState === 'complete') {
+    setTimeout(send, 1000);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(send, 1000);
+      setTimeout(send, 2000);
+    });
+  }
+
+  // 사용자가 스크롤할 때도 갱신
   let t;
   document.addEventListener('scroll', () => {
     clearTimeout(t);
-    t = setTimeout(send, 600);
+    t = setTimeout(send, 800);
   }, { passive: true });
 })();

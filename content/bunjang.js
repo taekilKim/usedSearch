@@ -32,23 +32,35 @@
 
   function send() {
     try {
-      const payload = { type: 'SCRAPE_RESULT', platform: 'bunjang', items: parseBunjang() };
-      chrome.runtime.sendMessage(payload);
+      const items = parseBunjang();
+      const payload = { type: 'SCRAPE_RESULT', platform: 'bunjang', items };
+      chrome.runtime.sendMessage(payload, () => {
+        console.log('[번개장터] 메시지 전송 완료:', items.length, '개');
+      });
     } catch (e) {
-      // 무시
+      console.error('[번개장터] 오류:', e);
     }
   }
 
-  // 최초 1회 + 동적 로딩 대비해 약간 지연 후 재시도
-  window.addEventListener('load', () => {
-    setTimeout(send, 600);
-    setTimeout(send, 1800);
-  });
+  // 즉시 실행 + 지연 실행 (SPA 대응)
+  setTimeout(send, 500);
+  setTimeout(send, 1500);
+  setTimeout(send, 3000);
+
+  // load 이벤트 처리 (아직 로드 안된 경우)
+  if (document.readyState === 'complete') {
+    setTimeout(send, 1000);
+  } else {
+    window.addEventListener('load', () => {
+      setTimeout(send, 1000);
+      setTimeout(send, 2000);
+    });
+  }
 
   // 사용자가 스크롤할 때도 갱신
   let t;
   document.addEventListener('scroll', () => {
     clearTimeout(t);
-    t = setTimeout(send, 600);
+    t = setTimeout(send, 800);
   }, { passive: true });
 })();
