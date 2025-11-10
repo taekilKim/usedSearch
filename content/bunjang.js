@@ -39,7 +39,7 @@
       }
 
       // 가격 패턴 찾기 (쉼표로 구분된 숫자: 1,000 ~ 999,999,999)
-      const priceMatch = allText.match(/\b(\d{1,3}(?:,\d{3})+)\b/);
+      const priceMatch = allText.match(/(\d{1,3}(?:,\d{3})+)/);
       const priceStr = priceMatch ? priceMatch[1] : '';
       const price = parsePriceToNumber(priceStr);
 
