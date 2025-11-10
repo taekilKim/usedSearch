@@ -10,35 +10,53 @@
 
     // 실제 페이지 구조 디버깅
     const allLinks = document.querySelectorAll('a');
-    const productLinks = Array.from(allLinks).filter(a => a.href.includes('/products/'));
+    // 실제 상품 링크만 찾기 (숫자 ID가 있는 것)
+    const productLinks = Array.from(allLinks).filter(a =>
+      a.href.includes('/products/') && /\/products\/\d+/.test(a.href)
+    );
     console.log('[번개장터] 전체 링크 개수:', allLinks.length);
-    console.log('[번개장터] /products/ 링크 개수:', productLinks.length);
+    console.log('[번개장터] 실제 상품 링크 개수:', productLinks.length);
 
     if (productLinks.length > 0) {
-      console.log('[번개장터] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 200));
+      console.log('[번개장터] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 300));
+      console.log('[번개장터] 첫 번째 상품 href:', productLinks[0].href);
     }
 
-    // 더 포괄적인 셀렉터 사용
-    const itemNodes = [
-      ...document.querySelectorAll('a[href*="/products/"], div[class*="product"], div[class*="Product"], li[class*="product"]')
-    ].filter(node => {
-      // 중복 제거: href가 있는 것만 또는 자식에 링크가 있는 것만
-      return node.tagName === 'A' || node.querySelector('a[href*="/products/"]');
-    });
+    // 실제 상품 링크만 사용
+    const itemNodes = productLinks;
 
     console.log('[번개장터] 발견된 아이템 노드:', itemNodes.length);
 
     const items = itemNodes.slice(0, 50).map((node, idx) => {
-      // 다양한 셀렉터 시도
-      const titleSelectors = '[data-testid="product-title"], .title, .name, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"]';
-      const priceSelectors = '[data-testid="product-price"], .price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
+      // node는 <a> 태그 자체
+      const link = absolutize(node.href);
 
-      const title = safeText(node, titleSelectors);
-      const priceStr = safeText(node, priceSelectors);
+      // 제목과 가격은 링크 안의 요소에서 찾기
+      const titleSelectors = 'div, span, p, h3, h4';
+      const priceSelectors = 'div, span, p';
+
+      // 모든 텍스트를 가져와서 분석
+      const allText = node.textContent || '';
+      const lines = allText.split('\n').map(s => s.trim()).filter(s => s);
+
+      if (idx === 0) {
+        console.log('[번개장터] 첫 번째 아이템 전체 텍스트:', allText);
+        console.log('[번개장터] 텍스트 라인들:', lines);
+      }
+
+      // 가격 패턴 찾기 (숫자 + 원 또는 쉼표가 있는 숫자)
+      let priceStr = '';
+      let title = '';
+
+      for (const line of lines) {
+        if (!priceStr && /[\d,]+\s*원?/.test(line)) {
+          priceStr = line;
+        } else if (!title && line.length > 2 && !/^[\d,]+\s*원?$/.test(line)) {
+          title = line;
+        }
+      }
+
       const price = parsePriceToNumber(priceStr);
-
-      const href = node.getAttribute('href') || node.querySelector('a[href*="/products/"]')?.getAttribute('href');
-      const link = href ? absolutize(href) : '';
 
       if (idx === 0) {
         console.log('[번개장터] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
