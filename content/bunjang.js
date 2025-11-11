@@ -36,10 +36,17 @@
 
       if (idx === 0) {
         console.log('[번개장터] 첫 번째 아이템 전체 텍스트:', allText);
+        console.log('[번개장터] 텍스트 타입:', typeof allText);
+        console.log('[번개장터] 텍스트 길이:', allText.length);
       }
 
       // 가격 패턴 찾기 (쉼표로 구분된 숫자: 1,000 ~ 999,999,999)
       const priceMatch = allText.match(/(\d{1,3}(?:,\d{3})+)/);
+
+      if (idx === 0) {
+        console.log('[번개장터] 정규식 매칭 결과:', priceMatch);
+      }
+
       const priceStr = priceMatch ? priceMatch[1] : '';
       const price = parsePriceToNumber(priceStr);
 
