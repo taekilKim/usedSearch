@@ -10,33 +10,51 @@
 
     // 실제 페이지 구조 디버깅
     const allLinks = document.querySelectorAll('a');
-    const articleLinks = Array.from(allLinks).filter(a => a.href.includes('/article'));
+    // 실제 상품 링크만 찾기: /kr/buy-sell/{상품명}-{ID}/
+    const articleLinks = Array.from(allLinks).filter(a =>
+      a.href.includes('/buy-sell/') && /\/buy-sell\/[^\/]+-[a-z0-9]+\//i.test(a.href)
+    );
     console.log('[당근마켓] 전체 링크 개수:', allLinks.length);
-    console.log('[당근마켓] /article 링크 개수:', articleLinks.length);
+    console.log('[당근마켓] /buy-sell/ 상품 링크 개수:', articleLinks.length);
 
     if (articleLinks.length > 0) {
-      console.log('[당근마켓] 첫 번째 상품 링크 샘플:', articleLinks[0].outerHTML.substring(0, 200));
+      console.log('[당근마켓] 첫 번째 상품 링크 샘플:', articleLinks[0].outerHTML.substring(0, 300));
+      console.log('[당근마켓] 첫 번째 상품 href:', articleLinks[0].href);
     }
 
-    // 더 포괄적인 셀렉터 사용
-    const itemNodes = [
-      ...document.querySelectorAll('article, a[href*="/articles/"], a[href*="/article/"], div[class*="article"], li[class*="card"]')
-    ].filter(node => {
-      return node.tagName === 'A' || node.querySelector('a[href*="/article"]');
-    });
+    // 실제 상품 링크만 사용
+    const itemNodes = articleLinks;
 
     console.log('[당근마켓] 발견된 아이템 노드:', itemNodes.length);
 
     const items = itemNodes.slice(0, 50).map((node, idx) => {
-      const titleSelectors = 'h2, h3, .article-title, [class*="title"], [class*="Title"], span[class*="title"], div[class*="title"]';
-      const priceSelectors = '[class*="price"], [class*="Price"], .article-price, .price-text, span[class*="price"], div[class*="price"]';
+      // node는 <a> 태그 자체
+      const link = absolutize(node.href);
 
-      const title = safeText(node, titleSelectors);
-      const priceStr = safeText(node, priceSelectors);
+      // 모든 텍스트를 가져와서 분석
+      const allText = (node.textContent || '').trim();
+
+      if (idx === 0) {
+        console.log('[당근마켓] 첫 번째 아이템 전체 텍스트:', allText);
+        console.log('[당근마켓] 텍스트 타입:', typeof allText);
+        console.log('[당근마켓] 텍스트 길이:', allText.length);
+      }
+
+      // 가격 패턴 찾기 (쉼표로 구분된 숫자)
+      const priceMatch = allText.match(/(\d{1,3}(?:,\d{3})+)/);
+
+      if (idx === 0) {
+        console.log('[당근마켓] 정규식 매칭 결과:', priceMatch);
+      }
+
+      const priceStr = priceMatch ? priceMatch[1] : '';
       const price = parsePriceToNumber(priceStr);
 
-      const href = node.getAttribute('href') || node.querySelector('a[href*="/article"]')?.getAttribute('href');
-      const link = href ? absolutize(href) : '';
+      // 제목: 가격 앞부분 (최대 100자)
+      let title = '';
+      if (priceMatch && priceMatch.index > 0) {
+        title = allText.substring(0, priceMatch.index).trim().substring(0, 100);
+      }
 
       if (idx === 0) {
         console.log('[당근마켓] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
