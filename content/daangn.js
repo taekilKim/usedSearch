@@ -5,6 +5,8 @@
 
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
+  let collectedCount = 0; // 수집 완료 플래그
+
   function parseDaangn() {
     console.log('[당근마켓] parseDaangn 실행, URL:', location.href);
 
@@ -71,8 +73,21 @@
   }
 
   function send() {
+    // 이미 30개 수집했으면 중단
+    if (collectedCount >= 30) {
+      console.log('[당근마켓] 이미 수집 완료, 전송 중단');
+      return;
+    }
+
     try {
       const items = parseDaangn();
+
+      // 30개 이상 수집되면 플래그 설정
+      if (items.length >= 30) {
+        collectedCount = items.length;
+        console.log('[당근마켓] 30개 수집 완료, 이후 전송 중단');
+      }
+
       const payload = { type: 'SCRAPE_RESULT', platform: 'daangn', items };
       chrome.runtime.sendMessage(payload, () => {
         console.log('[당근마켓] 메시지 전송 완료:', items.length, '개');

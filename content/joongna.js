@@ -5,38 +5,58 @@
 
   const { parsePriceToNumber, safeText, absolutize } = window.__UTIL__ || {};
 
+  let collectedCount = 0; // 수집 완료 플래그
+
   function parseJoongna() {
     console.log('[중고나라] parseJoongna 실행, URL:', location.href);
 
     // 실제 페이지 구조 디버깅
     const allLinks = document.querySelectorAll('a');
-    const productLinks = Array.from(allLinks).filter(a => a.href.includes('/product/'));
+    // 실제 상품 링크만 찾기: /product/{숫자ID} (form 제외)
+    const productLinks = Array.from(allLinks).filter(a =>
+      a.href.includes('/product/') && /\/product\/\d+/.test(a.href) && !a.href.includes('/form')
+    );
     console.log('[중고나라] 전체 링크 개수:', allLinks.length);
-    console.log('[중고나라] /product/ 링크 개수:', productLinks.length);
+    console.log('[중고나라] 실제 상품 링크 개수:', productLinks.length);
 
     if (productLinks.length > 0) {
-      console.log('[중고나라] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 200));
+      console.log('[중고나라] 첫 번째 상품 링크 샘플:', productLinks[0].outerHTML.substring(0, 300));
+      console.log('[중고나라] 첫 번째 상품 href:', productLinks[0].href);
     }
 
-    // 더 포괄적인 셀렉터 사용
-    const cards = [
-      ...document.querySelectorAll('a[href*="/product/"], div[class*="product"], div[class*="Product"], li[class*="item"], article')
-    ].filter(node => {
-      return node.tagName === 'A' || node.querySelector('a[href*="/product/"]');
-    });
+    // 실제 상품 링크만 사용
+    const itemNodes = productLinks;
 
-    console.log('[중고나라] 발견된 카드 노드:', cards.length);
+    console.log('[중고나라] 발견된 아이템 노드:', itemNodes.length);
 
-    const items = cards.slice(0, 50).map((card, idx) => {
-      const titleSelectors = '.title, [data-testid="title"], .product-title, h3, h4, div[class*="title"], div[class*="Title"], span[class*="title"], p[class*="title"]';
-      const priceSelectors = '.price, [data-testid="price"], .product-price, span[class*="price"], div[class*="price"], span[class*="Price"], div[class*="Price"]';
+    const items = itemNodes.slice(0, 50).map((node, idx) => {
+      // node는 <a> 태그 자체
+      const link = absolutize(node.href);
 
-      const title = safeText(card, titleSelectors);
-      const priceStr = safeText(card, priceSelectors);
+      // 모든 텍스트를 가져와서 분석
+      const allText = (node.textContent || '').trim();
+
+      if (idx === 0) {
+        console.log('[중고나라] 첫 번째 아이템 전체 텍스트:', allText);
+        console.log('[중고나라] 텍스트 타입:', typeof allText);
+        console.log('[중고나라] 텍스트 길이:', allText.length);
+      }
+
+      // 가격 패턴 찾기 (쉼표로 구분된 숫자)
+      const priceMatch = allText.match(/(\d{1,3}(?:,\d{3})+)/);
+
+      if (idx === 0) {
+        console.log('[중고나라] 정규식 매칭 결과:', priceMatch);
+      }
+
+      const priceStr = priceMatch ? priceMatch[1] : '';
       const price = parsePriceToNumber(priceStr);
 
-      const href = card.getAttribute('href') || card.querySelector('a[href*="/product/"]')?.getAttribute('href');
-      const link = href ? absolutize(href) : '';
+      // 제목: 가격 앞부분 (최대 100자)
+      let title = '';
+      if (priceMatch && priceMatch.index > 0) {
+        title = allText.substring(0, priceMatch.index).trim().substring(0, 100);
+      }
 
       if (idx === 0) {
         console.log('[중고나라] 첫 번째 아이템 파싱 결과:', { title, priceStr, price, link });
@@ -53,8 +73,21 @@
   }
 
   function send() {
+    // 이미 30개 수집했으면 중단
+    if (collectedCount >= 30) {
+      console.log('[중고나라] 이미 수집 완료, 전송 중단');
+      return;
+    }
+
     try {
       const items = parseJoongna();
+
+      // 30개 이상 수집되면 플래그 설정
+      if (items.length >= 30) {
+        collectedCount = items.length;
+        console.log('[중고나라] 30개 수집 완료, 이후 전송 중단');
+      }
+
       const payload = { type: 'SCRAPE_RESULT', platform: 'joongna', items };
       chrome.runtime.sendMessage(payload, () => {
         console.log('[중고나라] 메시지 전송 완료:', items.length, '개');
